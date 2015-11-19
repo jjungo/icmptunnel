@@ -3,6 +3,7 @@
  */
 
 #include "tunnel.h"
+#include "config.h"
 
 #include <string.h>
 

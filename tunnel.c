@@ -4,6 +4,7 @@
 
 #include "icmp.h"
 #include "tunnel.h"
+#include "config.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -30,8 +31,9 @@ int tun_alloc(char *dev, int flags)
   struct ifreq ifr;
   int tun_fd, err;
   char *clonedev = "/dev/net/tun";
-  printf("[DEBUG] Allocatating tunnel\n");
-
+  if (DEBUG){
+    printf("[DEBUG] Allocatating tunnel\n");
+  }
   tun_fd = open(clonedev, O_RDWR);
 
   if(tun_fd == -1) {
@@ -53,10 +55,10 @@ int tun_alloc(char *dev, int flags)
     exit(-1);
   }
 
-  printf("[DEBUG] Allocatating tunnel2");
-
-  printf("[DEBUG] Created tunnel %s\n", dev);
-
+  if (DEBUG){
+    printf("[DEBUG] Allocatating tunnel2");
+    printf("[DEBUG] Created tunnel %s\n", dev);
+  }
   return tun_fd;
 }
 
@@ -66,7 +68,10 @@ int tun_alloc(char *dev, int flags)
 int tun_read(int tun_fd, char *buffer, int length)
 {
   int bytes_read;
-  printf("[DEBUG] Reading from tunnel\n");
+
+  if (DEBUG){
+    printf("[DEBUG] Reading from tunnel\n");
+  }
   bytes_read = read(tun_fd, buffer, length);
 
   if (bytes_read == -1) {
@@ -84,7 +89,9 @@ int tun_read(int tun_fd, char *buffer, int length)
 int tun_write(int tun_fd, char *buffer, int length)
 {
   int bytes_written;
-  printf("[DEBUG] Writing to tunnel\n");
+  if (DEBUG){
+    printf("[DEBUG] Writing to tunnel\n");
+  }
   bytes_written = write(tun_fd, buffer, length);
 
   if (bytes_written == -1) {
@@ -128,11 +135,15 @@ void configure_network(int server)
     waitpid(pid, &status, 0);
     if (WEXITSTATUS(status) == 0) {
       // Script executed correctly
-      printf("[DEBUG] Script ran successfully\n");
+      if (DEBUG){
+        printf("[DEBUG] Script ran successfully\n");
+      }
     }
     else {
       // Some error
-      printf("[DEBUG] Error in running script\n");
+      if (DEBUG){
+        printf("[DEBUG] Error in running script\n");
+      }
     }
   }
 }
@@ -150,12 +161,16 @@ void run_tunnel(char *dest, int server)
 
   tun_fd = tun_alloc("tun0", IFF_TUN | IFF_NO_PI);
 
-  printf("[DEBUG] Starting tunnel - Dest: %s, Server: %d\n", dest, server);
-  printf("[DEBUG] Opening ICMP socket\n");
+  if (DEBUG){
+    printf("[DEBUG] Starting tunnel - Dest: %s, Server: %d\n", dest, server);
+    printf("[DEBUG] Opening ICMP socket\n");
+  }
   sock_fd = open_icmp_socket();
 
   if (server) {
-    printf("[DEBUG] Binding ICMP socket\n");
+    if (DEBUG){
+      printf("[DEBUG] Binding ICMP socket\n");
+    }
     bind_icmp_socket(sock_fd);
   }
 
@@ -169,13 +184,20 @@ void run_tunnel(char *dest, int server)
     select(tun_fd>sock_fd?tun_fd+1:sock_fd+1, &fs, NULL, NULL, NULL);
 
     if (FD_ISSET(tun_fd, &fs)) {
-      printf("[DEBUG] Data needs to be readed from tun device\n");
+
+      if (DEBUG){
+        printf("[DEBUG] Data needs to be readed from tun device\n");
+      }
       // Reading data from tun device and sending ICMP packet
 
-      printf("[DEBUG] Preparing ICMP packet to be sent\n");
+      if (DEBUG){
+        printf("[DEBUG] Preparing ICMP packet to be sent\n");
+      }
       // Preparing ICMP packet to be sent
       memset(&packet, 0, sizeof(struct icmp_packet));
-      printf("[DEBUG] Destination address: %s\n", dest);
+      if (DEBUG){
+        printf("[DEBUG] Destination address: %s\n", dest);
+      }
       strcpy(packet.src_addr, "0.0.0.0");
       strcpy(packet.dest_addr, dest);
       if(server) {
@@ -191,7 +213,9 @@ void run_tunnel(char *dest, int server)
         exit(-1);
       }
 
-      printf("[DEBUG] Sending ICMP packet with payload_size: %d, payload: %s\n", packet.payload_size, packet.payload);
+      if (DEBUG){
+        printf("[DEBUG] Sending ICMP packet with payload_size: %d, payload: %s\n", packet.payload_size, packet.payload);
+      }
       // Sending ICMP packet
       send_icmp_packet(sock_fd, &packet);
 
@@ -199,18 +223,24 @@ void run_tunnel(char *dest, int server)
     }
 
     if (FD_ISSET(sock_fd, &fs)) {
-      printf("[DEBUG] Received ICMP packet\n");
+      if (DEBUG){
+        printf("[DEBUG] Received ICMP packet\n");
+      }
       // Reading data from remote socket and sending to tun device
 
       // Getting ICMP packet
       memset(&packet, 0, sizeof(struct icmp_packet));
       receive_icmp_packet(sock_fd, &packet);
 
-      printf("[DEBUG] Read ICMP packet with src: %s, dest: %s, payload_size: %d, payload: %s\n", packet.src_addr, packet.dest_addr, packet.payload_size, packet.payload);
+      if (DEBUG){
+        printf("[DEBUG] Read ICMP packet with src: %s, dest: %s, payload_size: %d, payload: %s\n", packet.src_addr, packet.dest_addr, packet.payload_size, packet.payload);
+      }
       // Writing out to tun device
       tun_write(tun_fd, packet.payload, packet.payload_size);
 
-      printf("[DEBUG] Src address being copied: %s\n", packet.src_addr);
+      if (DEBUG){
+        printf("[DEBUG] Src address being copied: %s\n", packet.src_addr);
+      }
       strcpy(dest, packet.src_addr);
     }
   }
