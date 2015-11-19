@@ -19,6 +19,8 @@
 #include <pwd.h>
 #include <pthread.h>
 #include <arpa/inet.h>
+#include <unistd.h>
+#include <sys/wait.h>
 
 /**
  * Function to allocate a tunnel

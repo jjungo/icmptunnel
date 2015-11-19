@@ -9,6 +9,7 @@
 #include <netinet/ip_icmp.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <arpa/inet.h>
 #include <stdlib.h>
 
 /**
@@ -159,7 +160,9 @@ void receive_icmp_packet(int sock_fd, struct icmp_packet *packet_details)
   src_addr_size = sizeof(struct sockaddr_in);
   
   // Receiving packet
-  packet_size = recvfrom(sock_fd, packet, MTU, 0, (struct sockaddr *)&(src_addr), &src_addr_size);
+  packet_size = recvfrom(   sock_fd, packet, MTU, 0, 
+                            (struct sockaddr *)&(src_addr), 
+                            (socklen_t *)&src_addr_size);
 
   ip = (struct iphdr *)packet;
   icmp = (struct icmphdr *)(packet + sizeof(struct iphdr));
