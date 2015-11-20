@@ -26,6 +26,9 @@
 
 #define DEFAULT_ROUTE   "0.0.0.0"
 
+
+#define DEFAULT_ROUTE   "0.0.0.0"
+
 /**
  * Function to allocate a tunnel
  */
