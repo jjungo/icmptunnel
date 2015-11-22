@@ -4,6 +4,7 @@
 
 #include "icmp.h"
 #include "config.h"
+#include <arpa/inet.h>
 #include <stdint.h>
 #include <string.h>
 #include <netinet/ip.h>
@@ -50,13 +51,13 @@ int open_icmp_socket()
 
   if (sock_fd == -1) {
     perror("Unable to open ICMP socket\n");
-    exit(-1);
+    exit(EXIT_FAILURE);
   }
   
   // Providing IP Headers
   if (setsockopt(sock_fd, IPPROTO_IP, IP_HDRINCL, (const char *)&on, sizeof(on)) == -1) {
-    printf("Unable to set IP_HDRINCL socket option\n");
-    exit(-1);
+    perror("Unable to set IP_HDRINCL socket option\n");
+    exit(EXIT_FAILURE);
   }
 
   return sock_fd;
@@ -76,8 +77,8 @@ void bind_icmp_socket(int sock_fd)
 
   // binding the socket
   if (bind(sock_fd, (struct sockaddr *)&servaddr, sizeof(struct sockaddr_in)) == -1) {
-    printf("Unable to bind\n");
-    exit(-1);
+    perror("Unable to bind\n");
+    exit(EXIT_FAILURE);
   }
 }
 
@@ -105,9 +106,9 @@ void send_icmp_packet(int sock_fd, struct icmp_packet *packet_details)
   packet_size = sizeof(struct iphdr) + sizeof(struct icmphdr) + packet_details->payload_size;
   packet = calloc(packet_size, sizeof(uint8_t));
   if (packet == NULL) {
-    printf("No memory available\n");
+    perror("No memory available\n");
     close_icmp_socket(sock_fd);
-    exit(-1);
+    exit(EXIT_FAILURE);
   }
 
   // Initializing header and payload pointers

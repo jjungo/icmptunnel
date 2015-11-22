@@ -18,5 +18,5 @@ int main(int argc, char *argv[])
   }
   memcpy(ip_addr, argv[2], strlen(argv[2]) + 1);
   run_tunnel(ip_addr, !strcmp(argv[1], "-s"));
-  return 0;
+  return EXIT_SUCCESS;
 }
