@@ -26,6 +26,9 @@
 
 #define DEFAULT_ROUTE   "0.0.0.0"
 
+
+#define DEFAULT_ROUTE   "0.0.0.0"
+
 /**
  * Function to allocate a tunnel
  */
@@ -119,15 +122,15 @@ void configure_network(int server)
 
   if (server) {
     if (sizeof(SERVER_SCRIPT) > sizeof(path)){
-        printf("Server script path is too long\n");
-        exit(EXIT_FAILURE);
+      perror("Server script path is too long\n");
+      exit(EXIT_FAILURE);
     }
     strncpy(path, SERVER_SCRIPT, strlen(SERVER_SCRIPT) + 1);
   }
   else {
     if (sizeof(CLIENT_SCRIPT) > sizeof(path)){
-        printf("Client script path is too long\n");
-        exit(EXIT_FAILURE);
+      perror("Client script path is too long\n");
+      exit(EXIT_FAILURE);
     }
     strncpy(path, CLIENT_SCRIPT, strlen(CLIENT_SCRIPT) + 1);
   }
